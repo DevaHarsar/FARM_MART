@@ -1,12 +1,13 @@
 // src/App.jsx
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Login from './components/Auth/Login';
-import Signup from './components/Auth/Signup';
-import FarmerDashboard from './components/FarmerDashboard';
-import ProductList from './components/Product/ProductList';
-import Home from './components/Home';
-import Navbar from './components/Navbar';
+import React, { useState } from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import Login from "./components/Auth/Login";
+import Signup from "./components/Auth/Signup";
+import FarmerDashboard from "./components/FarmerDashboard";
+import ProductList from "./components/Product/ProductList";
+import Home from "./components/Home";
+import Navbar from "./components/Navbar";
+import ViewProduct from "./components/Product/ViewProduct";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -14,7 +15,7 @@ function App() {
 
   const handleLogin = (role) => {
     setIsLoggedIn(true);
-    setIsFarmer(role === 'farmer');
+    setIsFarmer(role === "farmer");
   };
 
   const handleLogout = () => {
@@ -24,12 +25,26 @@ function App() {
 
   return (
     <Router>
-      <Navbar isLoggedIn={isLoggedIn} isFarmer={isFarmer} onLogout={handleLogout} />
+      <Navbar
+        isLoggedIn={isLoggedIn}
+        isFarmer={isFarmer}
+        onLogout={handleLogout}
+      />
       <Routes>
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/farmer-dashboard" element={isFarmer ? <FarmerDashboard /> : <Home />} />
-        <Route path="/product-list" element={isLoggedIn ? <ProductList /> : <Home />} />
+        <Route
+          path="/farmer-dashboard"
+          element={isFarmer ? <FarmerDashboard /> : <Home />}
+        />
+        <Route
+          path="/product-list"
+          element={isLoggedIn ? <ProductList /> : <Home />}
+        />
+        <Route
+          path="/view-product"
+          element={isLoggedIn ? <ViewProduct /> : <Home />}
+        />
         <Route path="/" element={<Home />} />
       </Routes>
     </Router>

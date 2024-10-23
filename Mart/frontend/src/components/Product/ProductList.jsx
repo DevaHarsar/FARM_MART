@@ -1,6 +1,7 @@
 // src/components/ProductList.jsx
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { NavLink } from "react-router-dom";
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
@@ -9,10 +10,10 @@ const ProductList = () => {
     // Fetch the products from the API
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('/api/products');
+        const response = await axios.get("/api/products");
         setProducts(response.data);
       } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error("Error fetching products:", error);
       }
     };
 
@@ -27,15 +28,26 @@ const ProductList = () => {
           <p>No products available.</p>
         ) : (
           products.map((product) => (
-            <div key={product._id} className="border rounded-lg overflow-hidden shadow-md">
-              <img src={product.image} alt={product.name} className="w-full h-48 object-cover" />
-              <div className="p-4">
-                <h3 className="text-xl font-semibold">{product.name}</h3>
-                <p className="text-gray-700">Category: {product.category}</p>
-                <p className="text-lg font-bold">${product.price.toFixed(2)}</p>
-                {/* Add more product details or buttons here as needed */}
+            <NavLink to="/view-product" className="cursor-pointer">
+              <div
+                key={product._id}
+                className="border rounded-lg overflow-hidden shadow-md border-red-600 hover:scale-105 ease-in-out"
+              >
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="w-full h-48 object-cover"
+                />
+                <div className="p-4">
+                  <h3 className="text-xl font-semibold">{product.name}</h3>
+                  <p className="text-gray-700">Category: {product.category}</p>
+                  <p className="text-lg font-bold">
+                    ${product.price.toFixed(2)}
+                  </p>
+                  {/* Add more product details or buttons here as needed */}
+                </div>
               </div>
-            </div>
+            </NavLink>
           ))
         )}
       </div>
