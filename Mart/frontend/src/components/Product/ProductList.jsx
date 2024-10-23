@@ -28,7 +28,10 @@ const ProductList = () => {
           <p>No products available.</p>
         ) : (
           products.map((product) => (
-            <NavLink to="/view-product" className="cursor-pointer">
+            <NavLink
+              to={`/view-product/${product._id}`}
+              className="cursor-pointer"
+            >
               <div
                 key={product._id}
                 className="border rounded-lg overflow-hidden shadow-md border-red-600 hover:scale-105 ease-in-out"
@@ -44,7 +47,6 @@ const ProductList = () => {
                   <p className="text-lg font-bold">
                     ${product.price.toFixed(2)}
                   </p>
-                  {/* Add more product details or buttons here as needed */}
                 </div>
               </div>
             </NavLink>

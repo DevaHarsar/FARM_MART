@@ -42,7 +42,7 @@ function App() {
           element={isLoggedIn ? <ProductList /> : <Home />}
         />
         <Route
-          path="/view-product"
+          path="/view-product/:productId"
           element={isLoggedIn ? <ViewProduct /> : <Home />}
         />
         <Route path="/" element={<Home />} />
