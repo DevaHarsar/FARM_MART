@@ -51,7 +51,7 @@
 
 // export default ViewProduct;
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 
@@ -78,6 +78,12 @@ const ViewProduct = () => {
   if (!product) {
     return <div>Loading...</div>; // Show a loading message while the product data is being fetched
   }
+  // const qty = useRef(1);
+  // const cal = () => {
+  //   const val = qty.current;
+  //   console.log(val);
+  // };
+  // const totalPrice = 2 * product.price;
 
   return (
     <div className="h-screen w-full flex items-center justify-center view">
@@ -99,13 +105,16 @@ const ViewProduct = () => {
                 ITEM: {product.name}
               </h3>
               <p className="text-lg font-bold text-start">
-                Quantity:{" "}
+                Quantity:
                 <input
                   type="number"
                   name="qty"
                   id="qty"
                   min="1"
                   max="10"
+                  defaultValue={1}
+                  // ref={qty}
+                  // onChange={cal}
                   className="border-2 border-gray-400 rounded-md h-[90%] w-[30%]"
                 />
               </p>
