@@ -3,6 +3,7 @@ const Product = require("../models/Product"); // Make sure this path is correct
 const router = express.Router();
 
 // POST: Add a new product
+// POST: Add a new product
 router.post("/", async (req, res) => {
   const { name, category, price, image } = req.body;
 
