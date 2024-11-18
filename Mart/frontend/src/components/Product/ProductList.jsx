@@ -34,7 +34,7 @@ const ProductList = () => {
             >
               <div
                 key={product._id}
-                className="border rounded-lg overflow-hidden shadow-md border-red-600 hover:scale-105 ease-in-out"
+                className="border rounded-lg overflow-hidden shadow-md hover:scale-105 ease-in-out"
               >
                 <img
                   src={product.image}
