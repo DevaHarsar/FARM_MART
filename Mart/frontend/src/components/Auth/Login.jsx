@@ -1,59 +1,102 @@
-// src/components/Auth/Login.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { login } from '../../services/api'; // Assuming login is a service function for API call
+import '../Auth/auth.css'; // Assuming you have a separate CSS file for styling
+import { Link } from 'react-router-dom';
 
 const Login = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const navigate = useNavigate();
-  const [error, setError] = useState('');
+  const [error, setError] = useState(null);
+  const navigate = useNavigate(); // Use useNavigate for redirecting after login
+
+  // Check if the token exists in localStorage on page load (before render)
+  // useEffect(() => {
+  //   const token = localStorage.getItem('token');
+  //   const role = localStorage.getItem('role');
+  //   if (token && role) {
+  //     onLogin(role);
+  //     if (role === 'farmer') {
+  //       navigate('/farmer-dashboard');
+  //     } else {
+  //       navigate('/product-list');
+  //     }
+  //   }
+  // }, [navigate, onLogin]); 
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    if (token && role && window.location.pathname === '/login') {
+      onLogin(role);
+      if (role === 'farmer') {
+        navigate('/farmer-dashboard');
+      } else {
+        navigate('/product-list');
+      }
+    }
+  }, [navigate, onLogin]);
+  
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('/api/auth/login', { email, password });
-      const role = response.data.role; // Ensure your backend returns the role
+      const response = await login({ email, password });
+      const { token, role } = response.data;
 
-      // Check for role validity before proceeding
-      if (role !== 'farmer' && role !== 'buyer') {
-        throw new Error('Invalid role returned from the server');
+      // Save token and role in localStorage to persist session
+      localStorage.setItem('token', token);
+      localStorage.setItem('role', role);
+
+      // Call onLogin to update parent state
+      onLogin(role);
+
+      // Redirect to the appropriate dashboard based on role
+      if (role === 'farmer') {
+        navigate('/farmer-dashboard');
+      } else {
+        navigate('/product-list');
       }
-
-      alert('Login successful');
-      onLogin(role); // Pass the role to the parent component
-      navigate(role === 'farmer' ? '/farmer-dashboard' : '/product-list'); // Redirect based on role
-    } catch (error) {
-      console.error('Login error:', error);
-      setError('Login failed. Please check your credentials.');
+    } catch (err) {
+      console.error(err); // Add logging to catch specific errors
+      setError('Login failed! Please check your credentials.');
     }
   };
 
   return (
-    <div className="flex items-center justify-center h-screen">
-      <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow-md w-80">
-        <h2 className="text-2xl font-bold mb-4">Login</h2>
-        {error && <p className="text-red-500 mb-4">{error}</p>}
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full mb-4 p-2 border border-gray-300 rounded"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full mb-4 p-2 border border-gray-300 rounded"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit" className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-500 transition duration-300">
-          Login
-        </button>
-      </form>
+    <div className="auth-container">
+      <div className="auth-form">
+        <h2 className="form-title">Login</h2>
+        {error && <p className="error-message">{error}</p>}
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="form-input"
+            />
+          </div>
+          <div className="form-group">
+            <label>Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="form-input"
+            />
+          </div>
+          <button type="submit" className="submit-btn">Login</button>
+        </form>
+        <p className="redirect-text">
+          
+          Don't have an account? 
+          <Link to="/signup" className="mx-2">Sign Up</Link>
+        </p>
+      </div>
     </div>
   );
 };

@@ -1,0 +1,187 @@
+/* src/components/FarmerDashboard.css */
+
+.farmer-dashboard-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    background-color: #f9fafb;
+  }
+  
+  .farmer-dashboard-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+  
+  .farmer-dashboard-header h2 {
+    font-size: 28px;
+    font-weight: bold;
+  }
+  
+  .logout-btn {
+    background-color: #f56c6c;
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .logout-btn:hover {
+    background-color: #e84d4d;
+  }
+  
+  .add-product-form {
+    width: 100%;
+    max-width: 600px;
+    background-color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .add-product-form h3 {
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  
+  .add-product-form .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .add-product-form .form-group label {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 0.5rem;
+  }
+  
+  .add-product-form input,
+  .add-product-form textarea {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  .add-product-form button {
+    width: 100%;
+    padding: 0.8rem;
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .add-product-form button:hover {
+    background-color: #2563eb;
+  }
+  
+  .product-list {
+    width: 100%;
+    max-width: 1200px;
+    margin-top: 2rem;
+  }
+  
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 2rem;
+  }
+  
+  .product-card {
+    background-color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+  
+  .product-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+  
+  .product-card h4 {
+    font-size: 18px;
+    margin: 1rem 0;
+  }
+  
+  .product-card p {
+    font-size: 14px;
+    color: #555;
+  }
+  
+  .product-actions button {
+    margin: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .product-actions button:hover {
+    background-color: #2563eb;
+  }
+  .farmer-dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .profile-icon {
+    cursor: pointer;
+    position: relative;
+  }
+  
+  .profile-image {
+    width: 100x;
+    height: 100px;
+    border-radius: 100%;
+    /* object-fit: cover; */
+  }
+  
+  .profile-dialog {
+    position: fixed;
+    top: 20%;
+    right: 10%;
+    background: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    border-radius: 8px;
+    z-index: 1000;
+  }
+  
+  .dialog-content {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .close-dialog {
+    background: #f44336;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    margin-top: 10px;
+    cursor: pointer;
+  }
+  
+  .close-dialog:hover {
+    background: #d32f2f;
+  }
+  

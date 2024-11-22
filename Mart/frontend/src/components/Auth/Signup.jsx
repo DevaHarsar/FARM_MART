@@ -1,59 +1,67 @@
-// src/components/Auth/Signup.jsx
+// components/Auth/Signup.jsx
 import React, { useState } from 'react';
-import axios from 'axios';
-import Navbar from '../Navbar';
+import { signup } from '../../services/api';
+import '../Auth/auth.css'; 
+import { Link } from 'react-router-dom';
 
-const Signup = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState('buyer');
+function Signup() {
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    password: '',
+    role: 'user', // Default role
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('/api/auth/signup', { email, password, role });
+      await signup(formData);
       alert('Signup successful');
-      // Optionally redirect or update UI after successful signup
     } catch (error) {
-      console.error('Signup error:', error);
       alert('Signup failed');
     }
   };
 
   return (
-    <>
-    <div className="flex items-center justify-center h-screen">
-      <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow-md w-80">
-        <h2 className="text-2xl font-bold mb-4">Signup</h2>
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full mb-4 p-2 border rounded"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full mb-4 p-2 border rounded"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <select
-          className="w-full mb-4 p-2 border rounded"
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-        >
-          <option value="buyer">Buyer</option>
+    <div className="auth-container">
+       <div className="auth-form">
+      <h2 className="form-title">Sign Up</h2>
+      <form onSubmit={handleSubmit}>
+      <div className="form-group">
+        <input type="text" name="username" placeholder="Username" className="form-input" onChange={handleChange} required />
+        </div>
+        <div className="form-group">
+        <input type="email" name="email" placeholder="Email" className="form-input" onChange={handleChange} required />
+        </div>
+        <div className="form-group">
+        <input type="password" name="password" placeholder="Password" className="form-input" onChange={handleChange} required />
+        </div>
+        <div className="form-group">
+        <select name="role"  className="form-input" onChange={handleChange} required>
+        
+          <option value="user">User</option>
           <option value="farmer">Farmer</option>
         </select>
-        <button type="submit" className="w-full bg-green-600 text-white p-2 rounded">Signup</button>
+        </div>
+        <button type="submit" className="submit-btn">Sign Up</button>
+        
       </form>
+      <div className="auth-link">
+      
+      <p className="redirect-text">
+        Already have an account? 
+        <Link to="/login" className="mx-2">Login</Link>
+        </p>
+      </div>
+      </div>
     </div>
-    </>
+        
   );
-};
+}
 
 export default Signup;

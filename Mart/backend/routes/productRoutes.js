@@ -1,44 +1,155 @@
-const express = require("express");
-const Product = require("../models/Product"); // Make sure this path is correct
+// routes/productRoutes.js
+const express = require('express');
+const Product = require('../models/Product'); 
+const Review = require("../models/Review");
+const authMiddleware = require('../middleware/authMiddleware');
 const router = express.Router();
 
-// POST: Add a new product
-// POST: Add a new product
-router.post("/", async (req, res) => {
-  const { name, category, price, image } = req.body;
+// POST route for adding a new product
+router.post('/add', authMiddleware, async (req, res) => {
+  const { name, description, price, image } = req.body;
+  const farmerId = req.user.id; // Get the farmer's ID from the auth middleware
 
   try {
-    const newProduct = new Product({ name, category, price, image });
+    const newProduct = new Product({
+      name,
+      description,
+      price,
+      image,
+      farmerId, // Associate the product with the logged-in farmer
+    });
+
     await newProduct.save();
-    return res
-      .status(201)
-      .json({ message: "Product added successfully", product: newProduct });
+    res.status(201).json(newProduct); // Respond with the created product
   } catch (error) {
-    console.error("Error adding product:", error);
-    return res.status(500).json({ message: "Failed to add product" });
+    console.error(error);
+    res.status(500).json({ message: 'Failed to add product' });
   }
 });
 
-// GET: Get all products
-router.get("/", async (req, res) => {
+// GET route to fetch all products (available to all users)
+router.get('/all', async (req, res) => {
   try {
-    const products = await Product.find();
-    return res.status(200).json(products);
+    const products = await Product.find().populate('farmerId', 'name'); // Populate to include farmer info
+    res.status(200).json(products);
   } catch (error) {
-    console.error("Error fetching products:", error);
-    return res.status(500).json({ message: "Failed to fetch products" });
+    console.error(error);
+    res.status(500).json({ message: 'Failed to fetch products' });
   }
 });
-
-router.get("/:productId", async (req, res) => {
+router.get("/products/related/:id", async (req, res) => {
+  router.get("/products/related/:id", async (req, res) => {
+    try {
+      const product = await Product.findById((req.params.id));
+  
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+  
+      // Find related products with the same category, excluding the original product
+      const relatedProducts = await Product.find({
+        category: product.category,
+        _id: { $ne: (req.params.id) },
+      });
+  
+      // If no related products are found, fetch any products
+      if (relatedProducts.length === 0) {
+        relatedProducts = await Product.find({ _id: { $ne: (req.params.id) } });
+      }
+  
+      res.status(200).json(relatedProducts);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Failed to fetch related products" });
+    }
+  });
+  
+  
+});
+ 
+router.post("/products/:id/reviews", authMiddleware, async (req, res) => {
   try {
-    const productId = req.params.productId;
-    const product = await Product.findById(productId);
-    return res.status(200).json(product);
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    return res.status(500).json({ message: "Failed to fetch products" });
+    const { rating, comment } = req.body;
+    const { id } = req.params; // Product ID
+
+    // Create a new review
+    const review = new Review({
+      productId: id,
+      rating,
+      comment,
+      user: req.user.id, // Assuming you're saving the user ID from auth middleware
+    });
+
+    await review.save();
+    res.status(201).json(review);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to add review" });
+  }
+}); 
+router.get("/products/:id/reviews", async (req, res) => {
+  try {
+    const reviews = await Review.find({ productId: (req.params.id) }).populate(
+      "user",
+      "username"
+    );
+    res.status(200).json(reviews);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to fetch reviews" });
   }
 });
 
+
+// GET route to fetch products for the logged-in farmer (requires authentication)
+router.get('/my-products', authMiddleware, async (req, res) => {
+  const farmerId = req.user.id; // Get the farmer's ID from the auth middleware
+
+  try {
+    const products = await Product.find({ farmerId });
+    res.status(200).json(products);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to fetch products' });
+  }
+}); 
+
+// GET route to fetch a single product by its ID
+router.get('/:id', authMiddleware, async (req, res) => {
+  try {
+    const productId = req.params.id; // Retrieve product ID from URL parameter
+    // console.log(`Fetching product with ID: ${productId}`);
+
+    const product = await Product.findById(productId).populate('farmerId', 'name');
+
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    res.status(200).json(product);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to fetch product', error: error.message });
+  }
+});
+
+
+router.delete('/:id', async (req, res) => {
+  try {
+    await Product.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Product deleted' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error deleting product', error: err.message });
+  }
+});
+
+// Update Product
+router.put('/:id', async (req, res) => {
+  try {
+    const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(updatedProduct);
+  } catch (err) {
+    res.status(500).json({ message: 'Error updating product', error: err.message });
+  }
+});
 module.exports = router;

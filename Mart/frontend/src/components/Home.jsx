@@ -1,35 +1,100 @@
-// src/components/Home.jsx
-import React from 'react';
-import Navbar from './Navbar';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getAllProducts } from '../services/api.js'; // Make sure to install axios for API calls
+import Navbar from './Navbar'; // Assuming you have a Navbar component
+import { useAuth } from '../context/AuthContext';
 
 const Home = () => {
+  const [products, setProducts] = useState([]);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const handleAddToCart = () => {
+    if (!user) {
+      // If user is not logged in, redirect to login page
+      navigate('/login');
+    } else {
+      // Proceed with adding to the cart (this part can be added later)
+      console.log('Product added to cart');
+    }
+  };
+  // Fetch products from the database
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await getAllProducts(); // Replace with your actual endpoint
+        setProducts(response.data);
+      } catch (err) {
+        console.error('Error fetching products:', err);
+      }
+    };
+    fetchProducts();
+  }, []);
+
   return (
     <>
-    
-      <div className="bg-green-100 min-h-screen flex flex-col items-center justify-center p-6">
-        <h1 className="text-4xl font-bold text-green-600 mb-4">Welcome to Farm Mart</h1>
-        <p className="text-lg text-gray-700 mb-8 text-center">
-          Your one-stop solution for all agricultural needs. Discover the best products from our trusted farmers.
-        </p>
+      <div className="min-h-screen bg-gray-100">
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          <div className="bg-white p-4 rounded shadow">
-            <h2 className="text-xl font-semibold mb-2">Featured Products</h2>
-            <p className="text-gray-600">Fresh fruits and vegetables</p>
-          </div>
-          <div className="bg-white p-4 rounded shadow">
-            <h2 className="text-xl font-semibold mb-2">Quality Seeds</h2>
-            <p className="text-gray-600">High-quality seeds for your crops</p>
-          </div>
-          <div className="bg-white p-4 rounded shadow">
-            <h2 className="text-xl font-semibold mb-2">Organic Fertilizers</h2>
-            <p className="text-gray-600">Eco-friendly fertilizers for healthy soil</p>
-          </div>
-          <div className="bg-white p-4 rounded shadow">
-            <h2 className="text-xl font-semibold mb-2">Farm Equipment</h2>
-            <p className="text-gray-600">Tools and machinery for all your farming needs</p>
+
+        <div className="bg-green-600 text-white py-8">
+          <div className="container mx-auto text-center">
+            <h1 className="text-4xl font-bold">Welcome to Farm Mart</h1>
+            <p className="text-lg mt-4">
+              Explore fresh products directly from farmers. Best quality, best prices!
+            </p>
           </div>
         </div>
+
+        {/* Featured Products */}
+        <section className="mt-12">
+          <div className="container mx-auto text-center mb-8">
+            <h2 className="text-3xl font-semibold text-gray-800 mb-6">Featured Products</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+              {products.slice(0, 4).map((product) => (
+                <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="w-full h-56 object-cover"
+                  />
+                  <div className="p-4">
+                    <h3 className="text-xl font-semibold text-gray-800">{product.name}</h3>
+                    <p className="text-gray-600 mt-2">{product.description}</p>
+                    <div className="flex justify-between items-center mt-4">
+                      <span className="text-xl font-bold text-green-600">${product.price}</span>
+                      <button
+                        onClick={handleAddToCart}
+                        className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition-all duration-200"
+                      >
+                        Add to Cart
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Product Categories */}
+        <section className="bg-gray-50 py-8">
+          <div className="container mx-auto text-center">
+            <h2 className="text-3xl font-semibold text-gray-800 mb-6">Shop by Category</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-8">
+              <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-all duration-300">
+                <h3 className="text-xl font-semibold text-gray-800">Fruits & Vegetables</h3>
+              </div>
+              <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-all duration-300">
+                <h3 className="text-xl font-semibold text-gray-800">Seeds</h3>
+              </div>
+              <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-all duration-300">
+                <h3 className="text-xl font-semibold text-gray-800">Fertilizers</h3>
+              </div>
+              <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-all duration-300">
+                <h3 className="text-xl font-semibold text-gray-800">Farm Equipment</h3>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
     </>
   );

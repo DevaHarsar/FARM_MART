@@ -1,0 +1,13 @@
+.product-details img {
+    border-radius: 8px;
+  }
+  
+  .product-details h2 {
+    font-family: 'Poppins', sans-serif;
+    color: #2d3748;
+  }
+  
+  .product-details p {
+    font-family: 'Roboto', sans-serif;
+  }
+  
