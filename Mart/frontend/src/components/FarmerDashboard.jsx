@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -12,6 +11,7 @@ import {
 } from "../services/api"; // Ensure these functions are correctly implemented in api.js
 import "./FarmerDashboard.css"; // Import CSS for styling
 import defaultProfile from "./img/pic1.jpg";
+
 const FarmerDashboard = () => {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
@@ -72,9 +72,9 @@ const FarmerDashboard = () => {
   // Handle deleting a product
   const handleDeleteProduct = async (id) => {
     try {
-     const del =  await deleteProduct(id);
+      const del = await deleteProduct(id);
       setProducts(products.filter((product) => product._id !== id));
-      if(del) alert("Product Deleted Sucessfully");
+      if (del) alert("Product Deleted Successfully");
     } catch (err) {
       setDashboardError("Failed to delete product");
     }
@@ -91,7 +91,9 @@ const FarmerDashboard = () => {
     } catch (err) {
       setProfileError("Failed to update profile");
     }
-  }; 
+  };
+
+  // Handle updating a product
   const handleEditProduct = async (e) => {
     e.preventDefault();
     try {
@@ -102,34 +104,30 @@ const FarmerDashboard = () => {
         product._id === editingProduct._id ? { ...product, name, description, price, image } : product
       ));
       setEditingProduct(null); // Clear the editing state
+      setNewProduct({ name: "", description: "", price: "", image: "" }); // Reset form
     } catch (err) {
       setDashboardError("Failed to update product");
     }
   };
 
-  const handleStartEditing = async (id) => {
+  const handleStartEditing = async (productId) => {
     try {
-      const response = await getProductById(id);
-      console.log(response);
-  
-      if (!response || !response.data) {
-        throw new Error("Invalid response from API");
-      }
-  
-      setEditingProduct(response.data);
-      setNewProduct(response.data); // Pre-fill the form with product data
+      // Make API call to fetch product
+      const productData = await getProductById(productId);
+      setEditingProduct(productData);  // Set the product to state
+      setNewProduct(productData); // Pre-fill form with product data
     } catch (err) {
       setDashboardError("Failed to fetch product details");
       console.error(err);
     }
   };
-  
+
   return (
     <div className="farmer-dashboard-container">
       {/* Header */}
       <div className="farmer-dashboard-header">
         <h2>Farmer Dashboard</h2>
-        
+
         {/* Profile Icon */}
         <div
           className="profile-icon"
@@ -194,7 +192,9 @@ const FarmerDashboard = () => {
           </div>
         </div>
       )}
-    <div className="add-product-form">
+
+      {/* Add/Edit Product Form */}
+      <div className="add-product-form">
         <h3>{editingProduct ? "Edit Product" : "Add New Product"}</h3>
         {dashboardError && <p className="error-message">{dashboardError}</p>}
         <form onSubmit={editingProduct ? handleEditProduct : handleAddProduct}>
@@ -240,7 +240,9 @@ const FarmerDashboard = () => {
               }
             />
           </div>
-          <button type="submit">{editingProduct ? "Update Product" : "Add Product"}</button>
+          <button type="submit">
+            {editingProduct ? "Update Product" : "Add Product"}
+          </button>
         </form>
       </div>
 
@@ -279,4 +281,3 @@ const FarmerDashboard = () => {
 };
 
 export default FarmerDashboard;
-

@@ -29,6 +29,25 @@ router.post('/signup', async (req, res) => {
 
 
 // Login route
+// router.post('/login', async (req, res) => {
+//   const { email, password } = req.body;
+
+//   try {
+//     const user = await User.findOne({ email });
+//     if (!user) return res.status(404).json({ message: 'User not found' });
+
+//     const isPasswordValid = await bcrypt.compare(password, user.password);
+//     if (!isPasswordValid) return res.status(403).json({ message: 'Invalid credentials' });
+
+//     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
+//       expiresIn: '1h',
+//     });
+
+//     res.json({ message: 'Login successful', token, role: user.role });
+//   } catch (error) {
+//     res.status(500).json({ message: 'Login failed' });
+//   }
+// }); 
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -36,18 +55,35 @@ router.post('/login', async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: 'User not found' });
 
+    // Compare the password with the hashed password stored in the database
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) return res.status(403).json({ message: 'Invalid credentials' });
 
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
-      expiresIn: '1h',
-    });
+    // Create JWT token with user ID, role, and name (to be used on the frontend)
+    const token = jwt.sign(
+      { 
+        id: user._id, 
+        role: user.role, 
+        name: user.username // Include the user's name in the token payload
+      }, 
+      process.env.JWT_SECRET, 
+      { expiresIn: '1h' }
+    );
 
-    res.json({ message: 'Login successful', token, role: user.role });
+    // Send the response with token, role, and name
+    res.json({
+      message: 'Login successful',
+      token,
+      role: user.role,
+      name: user.name // Include the name in the response
+    });
   } catch (error) {
+    console.error(error); // Log error for debugging
     res.status(500).json({ message: 'Login failed' });
   }
 });
+
+
 router.put('/profile', async (req, res) => {
   const { name, location, profileImage } = req.body;
   try {

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { signup } from '../../services/api';
 import '../Auth/auth.css'; 
 import { Link } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 function Signup() {
   const [formData, setFormData] = useState({
@@ -11,6 +12,7 @@ function Signup() {
     password: '',
     role: 'user', // Default role
   });
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,6 +24,10 @@ function Signup() {
     try {
       await signup(formData);
       alert('Signup successful');
+      setTimeout(() => {
+        navigate("/login");
+      }, 500);
+       
     } catch (error) {
       alert('Signup failed');
     }

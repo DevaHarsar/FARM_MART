@@ -42,11 +42,12 @@ const Login = ({ onLogin }) => {
     e.preventDefault();
     try {
       const response = await login({ email, password });
-      const { token, role } = response.data;
+      const { token, role, name } = response.data;
 
       // Save token and role in localStorage to persist session
       localStorage.setItem('token', token);
       localStorage.setItem('role', role);
+      localStorage.setItem('name', name);   
 
       // Call onLogin to update parent state
       onLogin(role);
