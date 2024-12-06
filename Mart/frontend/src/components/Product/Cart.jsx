@@ -20,34 +20,39 @@ const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [error, setError] = useState(null);
   const [total, setTotal] = useState(0);
+  const [isLoading, setIsLoading] = useState(true); // Added loading state
   const navigate = useNavigate();
 
   // Fetch cart items and resolve product details
   useEffect(() => {
     const fetchCartItems = async () => {
+      setIsLoading(true); // Start loading
       try {
-        // Fetch cart data
         const response = await axios.get(`http://localhost:5000/api/cart`, authHeader());
         const cart = response.data;
-         
-        // Resolve product details for each cart item
+
         const itemsWithDetails = await Promise.all(
           cart.items.map(async (item) => {
-           
-            const productResponse =await  getProductById(item.productId)
-          
-            return {
-              ...item,
-              product: productResponse, // Attach product details to the item
-            };
+            try {
+              const productResponse = await getProductById(item.productId);
+              return {
+                ...item,
+                product: productResponse, // Attach product details to the item
+              };
+            } catch (err) {
+              console.warn(`Product with ID ${item.productId} not found.`);
+              return null; // Return null for missing products
+            }
           })
         );
 
-        setCartItems(itemsWithDetails);
-        console.log(itemsWithDetails)
-        calculateTotal(itemsWithDetails);
+        const validItems = itemsWithDetails.filter((item) => item !== null);
+        setCartItems(validItems);
+        calculateTotal(validItems);
       } catch (err) {
         setError(err.response?.data?.message || "Failed to fetch cart items.");
+      } finally {
+        setIsLoading(false); // End loading
       }
     };
 
@@ -68,14 +73,12 @@ const Cart = () => {
     if (quantity < 1) return;
 
     try {
-      // Update quantity in backend
       await axios.put(
         `http://localhost:5000/api/cart/${itemId}`,
         { quantity },
         authHeader()
       );
 
-      // Update quantity locally
       const updatedCart = cartItems.map((item) =>
         item._id === itemId ? { ...item, quantity } : item
       );
@@ -89,13 +92,11 @@ const Cart = () => {
   // Handle removing an item
   const handleRemoveItem = async (itemId) => {
     try {
-      // Remove item in backend
       await axios.delete(`http://localhost:5000/api/cart/${itemId}`, authHeader());
-
-      // Remove item locally
       const updatedCart = cartItems.filter((item) => item._id !== itemId);
       setCartItems(updatedCart);
       calculateTotal(updatedCart);
+      alert("Item removed from cart.");
     } catch (err) {
       setError("Failed to remove item from cart.");
     }
@@ -110,7 +111,11 @@ const Cart = () => {
 
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
-      {cartItems.length > 0 ? (
+      {isLoading ? (
+        <div className="flex justify-center items-center min-h-[300px]">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-blue-500 border-solid"></div>
+        </div>
+      ) : cartItems.length > 0 ? (
         <div className="bg-white rounded-lg shadow-lg p-6">
           {cartItems.map((item) => (
             <div
@@ -119,46 +124,56 @@ const Cart = () => {
             >
               <div className="flex items-center w-1/2">
                 <img
-                  src={item.product.image || "default.jpg"}
-                  alt={item.product.name}
+                  src={item.product?.image || "default.jpg"}
+                  alt={item.product?.name || "Deleted Product"}
                   className="w-20 h-20 object-cover rounded mr-4"
                 />
                 <div>
-                  <h3 className="text-lg font-bold">{item.product.name}</h3>
-                  <p className="text-gray-600">₹{item.product.price} each</p>
+                  <h3 className="text-lg font-bold">
+                    {item.product?.name || "Product Removed"}
+                  </h3>
+                  {item.product ? (
+                    <p className="text-gray-600">₹{item.product.price} each</p>
+                  ) : (
+                    <p className="text-gray-600 text-sm italic">No longer available</p>
+                  )}
                 </div>
               </div>
 
               <div className="flex items-center">
-                <button
-                  onClick={() =>
-                    handleQuantityChange(item._id, item.quantity - 1)
-                  }
-                  disabled={item.quantity <= 1}
-                  className="px-3 py-1 bg-gray-300 text-black rounded hover:bg-gray-400"
-                >
-                  -
-                </button>
-                <input
-                  type="number"
-                  value={item.quantity}
-                  onChange={(e) =>
-                    handleQuantityChange(item._id, parseInt(e.target.value, 10))
-                  }
-                  className="mx-2 w-12 text-center border rounded"
-                />
-                <button
-                  onClick={() =>
-                    handleQuantityChange(item._id, item.quantity + 1)
-                  }
-                  className="px-3 py-1 bg-gray-300 text-black rounded hover:bg-gray-400"
-                >
-                  +
-                </button>
+                {item.product && (
+                  <>
+                    <button
+                      onClick={() =>
+                        handleQuantityChange(item._id, item.quantity - 1)
+                      }
+                      disabled={item.quantity <= 1}
+                      className="px-3 py-1 bg-gray-300 text-black rounded hover:bg-gray-400"
+                    >
+                      -
+                    </button>
+                    <input
+                      type="number"
+                      value={item.quantity}
+                      onChange={(e) =>
+                        handleQuantityChange(item._id, parseInt(e.target.value, 10))
+                      }
+                      className="mx-2 w-12 text-center border rounded"
+                    />
+                    <button
+                      onClick={() =>
+                        handleQuantityChange(item._id, item.quantity + 1)
+                      }
+                      className="px-3 py-1 bg-gray-300 text-black rounded hover:bg-gray-400"
+                    >
+                      +
+                    </button>
+                  </>
+                )}
               </div>
 
               <p className="w-1/6 text-right text-lg font-semibold">
-                ₹{item.product.price * item.quantity}
+                {item.product ? `₹${item.product.price * item.quantity}` : "N/A"}
               </p>
 
               <button

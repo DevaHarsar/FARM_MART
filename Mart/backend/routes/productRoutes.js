@@ -42,7 +42,7 @@ router.get('/all', async (req, res) => {
 router.get("/related/:id", async (req, res) => {
   try {
     const product = await Product.findById((req.params.id));
-       console.log(product)
+       
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
