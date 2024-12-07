@@ -8,36 +8,50 @@ const Navbar = ({ isLoggedIn, isFarmer, onLogout, cartLength }) => {
       <Link to="/" className="text-lg font-bold">
         Farm Mart
       </Link>
-      <div className="flex justify-end items-center">
+      <div className="flex items-center space-x-6">
         {!isLoggedIn ? (
           <>
-            <Link to="/login" className="mx-2">
+            <Link to="/login" className="text-center bg-white text-green-700 py-2 px-4 rounded-md hover:bg-green-300 transition-all duration-200">
               Login
             </Link>
-            <Link to="/signup" className="mx-2">
+            <Link to="/signup" className="text-center bg-white text-green-700 py-2 px-4 rounded-md hover:bg-green-300 transition-all duration-200">
               Signup
             </Link>
           </>
         ) : (
           <>
             {isFarmer ? (
-              <Link to="/farmer-dashboard" className="mx-2">
-                Farmer Dashboard
-              </Link>
+              <>
+                <Link to="/farmer-dashboard" className="text-center bg-white text-green-700 py-2 px-4 rounded-md hover:bg-green-300 transition-all duration-200">
+                  Farmer Dashboard
+                </Link>
+                <Link to="/orders/farmer-orders" className="text-center bg-white text-green-700 py-2 px-4 rounded-md hover:bg-green-300 transition-all duration-200">
+                  Ordered List
+                </Link>
+              </>
             ) : (
-              <Link to="/product-list" className="mx-5 border-2 bg-white text-green-700">
-                Product List
-              </Link>
+              <>
+                <Link to="/orders" className="text-center bg-white text-green-700 py-2 px-4 rounded-md hover:bg-green-300 transition-all duration-200">
+                  Orders
+                </Link>
+                <Link to="/product-list" className="text-center bg-white text-green-700 py-2 px-4 rounded-md hover:bg-green-300 transition-all duration-200">
+                  Product List
+                </Link>
+              </>
             )}
             {!isFarmer && (
-              <Link to="/cart" className="mx-2">
-                 <FiShoppingCart size={30} />
-                 
+              <Link to="/cart" className="relative text-center bg-white text-green-700 py-2 px-4 rounded-md hover:bg-green-300 transition-all duration-200">
+                <FiShoppingCart size={30} />
+                {cartLength > 0 && (
+                  <span className="absolute top-0 right-0 text-xs bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center">
+                    {cartLength}
+                  </span>
+                )}
               </Link>
             )}
             <button
               onClick={onLogout}
-              className="mx-5 bg-red-500 p-2 rounded hover:bg-red-700 transition-all duration-200"
+              className="text-center bg-red-500 py-2 px-4 rounded-md hover:bg-red-700 transition-all duration-200"
             >
               Logout
             </button>

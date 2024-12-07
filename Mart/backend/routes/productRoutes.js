@@ -1,37 +1,91 @@
 // routes/productRoutes.js
 const express = require('express');
 const Product = require('../models/Product');
-
+const User = require("../models/User")
 const Review = require("../models/Review");
 const authMiddleware = require('../middleware/authMiddleware');
 const router = express.Router();
 
-// POST route for adding a new product
-router.post('/add', authMiddleware, async (req, res) => {
-  const { name, description, price, image } = req.body;
-  const farmerId = req.user.id; // Get the farmer's ID from the auth middleware
+
+
+router.post("/add", authMiddleware, async (req, res) => {
+  const { name, description, category, quantityOptions, image } = req.body;
+  const farmerId = req.user.id;
 
   try {
+    // Basic validation
+    if (!name || !description || !category || !quantityOptions || !Array.isArray(quantityOptions)) {
+      return res.status(400).json({ message: "All required fields must be provided, including valid quantity options." });
+    }
+
+    // Validate and process each quantity option
+    const prices = {};
+    quantityOptions.forEach(option => {
+      const { quantity, basePrice } = option;
+      if (!quantity || !basePrice) {
+        return res.status(400).json({ message: "Each quantity option must include 'quantity' and 'basePrice'." });
+      }
+
+      if (quantity === "1kg") {
+        prices.price_1kg = basePrice;
+        prices.price_500g = basePrice / 2;
+        prices.price_250g = basePrice / 4;
+      } else if (quantity === "500g") {
+        prices.price_500g = basePrice;
+        prices.price_1kg = basePrice * 2;
+        prices.price_250g = basePrice / 2;
+      } else if (quantity === "250g") {
+        prices.price_250g = basePrice;
+        prices.price_500g = basePrice * 2;
+        prices.price_1kg = basePrice * 4;
+      } else {
+        return res.status(400).json({ message: "Invalid quantity specified. Only '1kg', '500g', '250g' are allowed." });
+      }
+    });
+
+    // Create the product
     const newProduct = new Product({
       name,
       description,
-      price,
+      category,
+      prices,
       image,
-      farmerId, // Associate the product with the logged-in farmer
+      farmerId,
     });
 
+    // Save the product
     await newProduct.save();
-    res.status(201).json(newProduct); // Respond with the created product
+    res.status(201).json(newProduct);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Failed to add product' });
+    res.status(500).json({ message: "Server error, could not add product." });
+  }
+});
+
+router.get('/farmer-username/:id', async (req, res) => {
+  try {
+    // Fetch the user by ID
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'Farmer not found' });
+    }
+
+    // Extract the username from the user document
+    const username = user.username;
+
+    // Respond with the username
+    res.status(200).json({ username });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to fetch farmer details' });
   }
 });
 
 // GET route to fetch all products (available to all users)
 router.get('/all', async (req, res) => {
   try {
-    const products = await Product.find().populate('farmerId', 'name'); // Populate to include farmer info
+    const products = await Product.find()// Populate to include farmer info
     res.status(200).json(products);
   } catch (error) {
     console.error(error);
@@ -42,13 +96,13 @@ router.get('/all', async (req, res) => {
 router.get("/related/:id", async (req, res) => {
   try {
     const product = await Product.findById((req.params.id));
-       
+
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
 
     // Find related products with the same category, excluding the original product
-    const relatedProducts = await Product.find({
+    let relatedProducts = await Product.find({
       category: product.category,
       _id: { $ne: (req.params.id) },
     });
@@ -140,10 +194,7 @@ router.get('/my-products', authMiddleware, async (req, res) => {
 router.get('/:id', authMiddleware, async (req, res) => {
   try {
     const productId = req.params.id; // Retrieve product ID from URL parameter
-    //  console.log(`Fetching product with ID: ${productId}`);
-
-    const product = await Product.findById(productId).populate('farmerId', 'name');
-     
+    const product = await Product.findById(productId)
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
@@ -168,6 +219,7 @@ router.delete('/:id', async (req, res) => {
 // Update Product
 router.put('/:id', async (req, res) => {
   try {
+    console.log("it is server calling")
     const updatedProduct = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json(updatedProduct);
   } catch (err) {

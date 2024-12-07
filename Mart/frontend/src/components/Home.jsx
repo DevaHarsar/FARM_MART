@@ -58,9 +58,8 @@ const Home = () => {
                   />
                   <div className="p-4">
                     <h3 className="text-xl font-semibold text-gray-800">{product.name}</h3>
-                    <p className="text-gray-600 mt-2">{product.description}</p>
                     <div className="flex justify-between items-center mt-4">
-                      <span className="text-xl font-bold text-green-600">${product.price}</span>
+                      <span className="text-xl font-bold text-green-600">₹{product.prices.price_1kg}</span>
                       <button
                         onClick={() => handleAddToCart(product)}
                         className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition-all duration-200"
@@ -68,6 +67,7 @@ const Home = () => {
                         Add to Cart
                       </button>
                     </div>
+                    
                   </div>
                 </div>
               ))}

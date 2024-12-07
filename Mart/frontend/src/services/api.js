@@ -114,8 +114,9 @@ export const removeItemFromCart = async (itemId) => {
 };
 export const login = (data) => axios.post(`${API_URL}/auth/login`, data);
 export const signup = (data) => axios.post(`${API_URL}/auth/signup`, data);
-export const addProduct = (data) => axios.post(`${API_URL}/products/add`, data, authHeader());
+export const addProduct = (data) => axios.post(`${API_URL}/products/add`, data,authHeader() );
 export const getFarmerProducts = () => axios.get(`${API_URL}/products/my-products`, authHeader());
 export const getAllProducts = () => axios.get(`${API_URL}/products/all`);
 export const updateProduct = (id, data) => axios.put(`${API_URL}/products/${id}`, data, authHeader());
 export const deleteProduct = (id) => axios.delete(`${API_URL}/products/${id}`, authHeader());
+export const getFarmerDetails = (id)=>axios.get(`${API_URL}/products/farmer-username/${id}`,authHeader());

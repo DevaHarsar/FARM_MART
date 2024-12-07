@@ -9,20 +9,6 @@ const Login = ({ onLogin }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const navigate = useNavigate(); // Use useNavigate for redirecting after login
-
-  // Check if the token exists in localStorage on page load (before render)
-  // useEffect(() => {
-  //   const token = localStorage.getItem('token');
-  //   const role = localStorage.getItem('role');
-  //   if (token && role) {
-  //     onLogin(role);
-  //     if (role === 'farmer') {
-  //       navigate('/farmer-dashboard');
-  //     } else {
-  //       navigate('/product-list');
-  //     }
-  //   }
-  // }, [navigate, onLogin]); 
   useEffect(() => {
     const token = localStorage.getItem('token');
     const role = localStorage.getItem('role');
@@ -35,8 +21,8 @@ const Login = ({ onLogin }) => {
       }
     }
   }, [navigate, onLogin]);
-  
-  
+
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,7 +33,7 @@ const Login = ({ onLogin }) => {
       // Save token and role in localStorage to persist session
       localStorage.setItem('token', token);
       localStorage.setItem('role', role);
-      localStorage.setItem('name', name);   
+      localStorage.setItem('name', name);
 
       // Call onLogin to update parent state
       onLogin(role);
@@ -93,8 +79,8 @@ const Login = ({ onLogin }) => {
           <button type="submit" className="submit-btn">Login</button>
         </form>
         <p className="redirect-text">
-          
-          Don't have an account? 
+
+          Don't have an account?
           <Link to="/signup" className="mx-2">Sign Up</Link>
         </p>
       </div>

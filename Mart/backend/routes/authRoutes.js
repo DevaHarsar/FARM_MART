@@ -27,8 +27,6 @@ router.post('/signup', async (req, res) => {
   }
 });
 
-
-// Login route
 // router.post('/login', async (req, res) => {
 //   const { email, password } = req.body;
 
@@ -61,12 +59,12 @@ router.post('/login', async (req, res) => {
 
     // Create JWT token with user ID, role, and name (to be used on the frontend)
     const token = jwt.sign(
-      { 
-        id: user._id, 
-        role: user.role, 
+      {
+        id: user._id,
+        role: user.role,
         name: user.username // Include the user's name in the token payload
-      }, 
-      process.env.JWT_SECRET, 
+      },
+      process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
 

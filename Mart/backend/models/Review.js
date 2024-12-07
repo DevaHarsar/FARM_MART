@@ -5,10 +5,10 @@ const reviewSchema = new mongoose.Schema({
   name: { type: String, required: true },
   rating: { type: Number, required: true },
   comment: { type: String, required: true },
-  product: { 
-    type: mongoose.Schema.Types.ObjectId, 
+  product: {
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'Product', // Reference to the Product model
-    required: true 
+    required: true
   },
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true } // Optional: if you want to link reviews to users
 });
