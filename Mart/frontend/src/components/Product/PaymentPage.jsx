@@ -1,13 +1,15 @@
 import React, { useState } from "react";
 import QRCode from "react-qr-code";
+import { paymentprocess } from "../../services/api";
 
 const PaymentPage = ({ totalAmount }) => {
   const [paymentMethod, setPaymentMethod] = useState("COD");
   const [isPaid, setIsPaid] = useState(false);
 
-  const handlePayment = () => {
+  const handlePayment = async () => {
     if (paymentMethod === "Online") {
       // Simulate online payment success
+      const { data } = await paymentprocess();
       setIsPaid(true);
       alert("Payment Successful!");
     } else {
@@ -39,7 +41,9 @@ const PaymentPage = ({ totalAmount }) => {
             onChange={(e) => setPaymentMethod(e.target.value)}
             className="mr-2"
           />
-          <label htmlFor="cod" className="text-gray-600">Cash on Delivery</label>
+          <label htmlFor="cod" className="text-gray-600">
+            Cash on Delivery
+          </label>
         </div>
 
         <div className="flex items-center mb-4">
@@ -52,7 +56,9 @@ const PaymentPage = ({ totalAmount }) => {
             onChange={(e) => setPaymentMethod(e.target.value)}
             className="mr-2"
           />
-          <label htmlFor="online" className="text-gray-600">Online Payment</label>
+          <label htmlFor="online" className="text-gray-600">
+            Online Payment
+          </label>
         </div>
 
         {/* QR Code for Online Payment */}

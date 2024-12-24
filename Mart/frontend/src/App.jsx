@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+} from "react-router-dom";
 import Login from "./components/Auth/Login";
 import Signup from "./components/Auth/Signup";
 import FarmerDashboard from "./components/FarmerDashboard";
@@ -15,10 +20,16 @@ import OrderDetails from "./components/Product/OrderDetails";
 import FarmerOrders from "./components/Product/FarmerOrders";
 function App() {
   // Initialize state from localStorage
-  const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem("isLoggedIn") === "true");
-  const [isFarmer, setIsFarmer] = useState(localStorage.getItem("isFarmer") === "true");
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    localStorage.getItem("isLoggedIn") === "false"
+  );
+  const [isFarmer, setIsFarmer] = useState(
+    localStorage.getItem("isFarmer") === "false"
+  );
   const [username, setUsername] = useState(localStorage.getItem("username"));
-  const [cart, setCart] = useState(JSON.parse(localStorage.getItem("cart")) || []);
+  const [cart, setCart] = useState(
+    JSON.parse(localStorage.getItem("cart")) || []
+  );
 
   useEffect(() => {
     // Update localStorage whenever cart changes
@@ -44,7 +55,9 @@ function App() {
 
   const handleAddToCart = (product) => {
     const updatedCart = [...cart];
-    const existingProduct = updatedCart.find((item) => item._id === product._id);
+    const existingProduct = updatedCart.find(
+      (item) => item._id === product._id
+    );
     if (existingProduct) {
       existingProduct.quantity += 1; // Increment quantity if already in cart
     } else {
@@ -94,40 +107,60 @@ function App() {
         {/* Protected Routes for Farmers */}
         <Route
           path="/farmer-dashboard"
-          element={isLoggedIn && isFarmer ? <FarmerDashboard /> : <Navigate to="/login" />}
+          element={
+            isLoggedIn && isFarmer ? (
+              <FarmerDashboard />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
 
         {/* Protected Routes for Authenticated Users */}
         <Route
           path="/product-list"
-          element={isLoggedIn && !isFarmer ? <ProductList /> : <Navigate to="/login" />}
+          element={
+            isLoggedIn && !isFarmer ? <ProductList /> : <Navigate to="/login" />
+          }
         />
         <Route
           path="/product/:id"
-          element={isLoggedIn ? <ViewProduct addToCart={handleAddToCart} /> : <Navigate to="/login" />}
+          element={
+            isLoggedIn ? (
+              <ViewProduct addToCart={handleAddToCart} />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
         <Route
           path="/cart"
-          element={isLoggedIn ? (
-            <Cart
-              cart={cart}
-              setCart={setCart}
-              handleQuantityChange={handleQuantityChange}
-              handleRemoveItem={handleRemoveItem}
-            />
-          ) : (
-            <Navigate to="/login" />
-          )}
+          element={
+            isLoggedIn ? (
+              <Cart
+                cart={cart}
+                setCart={setCart}
+                handleQuantityChange={handleQuantityChange}
+                handleRemoveItem={handleRemoveItem}
+              />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
         />
         <Route
           path="/payment"
-          element={isLoggedIn ? <PaymentPage cart={cart} /> : <Navigate to="/login" />}
+          element={
+            isLoggedIn ? <PaymentPage cart={cart} /> : <Navigate to="/login" />
+          }
         />
-         <Route
+        <Route
           path="/Orderpage"
-          element={isLoggedIn ? <OrderPage cart={cart} /> : <Navigate to="/login" />}
+          element={
+            isLoggedIn ? <OrderPage cart={cart} /> : <Navigate to="/login" />
+          }
         />
-         <Route
+        <Route
           path="/orders"
           element={isLoggedIn ? <OrderList /> : <Navigate to="/login" />}
         />
@@ -137,7 +170,10 @@ function App() {
           path="/orders/:id"
           element={isLoggedIn ? <OrderDetails /> : <Navigate to="/login" />}
         />
-         <Route path="/orders/farmer-orders" element={isLoggedIn ? <FarmerOrders /> : <Navigate to="/login" />} />
+        <Route
+          path="/orders/farmer-orders"
+          element={isLoggedIn ? <FarmerOrders /> : <Navigate to="/login" />}
+        />
         {/* Redirect all unknown routes to Home */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
