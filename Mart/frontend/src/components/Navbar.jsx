@@ -1,12 +1,15 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { FiShoppingCart } from "react-icons/fi";
-
+import logo from "../assets/img/fAMRMART LOGO.webp"
 const Navbar = ({ isLoggedIn, isFarmer, onLogout, cartLength }) => {
   return (
     <nav className="flex justify-between items-center p-4 bg-green-600 text-white">
       <Link to="/" className="text-lg font-bold">
-        Farm Mart
+
+        <div className="sticky top-0 left-0">
+          <img src={logo} alt="Farm Mart Logo" className="h-12 w-28" />
+        </div>
       </Link>
       <div className="flex items-center space-x-6">
         {!isLoggedIn ? (
