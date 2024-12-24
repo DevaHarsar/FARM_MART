@@ -6,6 +6,7 @@ const FarmerOrders = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [products, setProducts] = useState({}); // Store fetched product details
+  const [visibleOrders, setVisibleOrders] = useState(6); // Initially show 6 orders
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -45,7 +46,6 @@ const FarmerOrders = () => {
     };
 
     fetchOrders();
-
   }, []);
 
   const updateStatus = async (orderId, status) => {
@@ -70,8 +70,15 @@ const FarmerOrders = () => {
     }
   };
 
+  const handleShowMore = () => {
+    setVisibleOrders((prev) => prev + 6); // Show 6 more orders on "Show More" click
+  };
+
   if (loading) return <div className="text-center mt-10">Loading orders...</div>;
   if (error) return <div className="text-center text-red-500 mt-10">{error}</div>;
+
+  // Sort orders by creation date (latest first)
+  const sortedOrders = orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   return (
     <div className="container mx-auto mt-10 px-4">
@@ -80,7 +87,7 @@ const FarmerOrders = () => {
         <div className="text-center text-gray-500">No orders found.</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {orders.map((order) => (
+          {sortedOrders.slice(0, visibleOrders).map((order) => (
             <div
               key={order._id}
               className="border rounded-lg p-4 shadow-lg bg-white"
@@ -154,6 +161,18 @@ const FarmerOrders = () => {
               </select>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Show More Button */}
+      {orders.length > visibleOrders && (
+        <div className="text-center mt-6">
+          <button
+            onClick={handleShowMore}
+            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Show More
+          </button>
         </div>
       )}
     </div>

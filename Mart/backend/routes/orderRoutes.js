@@ -4,60 +4,93 @@ const Order = require("../models/Order");
 const authMiddleware = require("../middleware/authMiddleware");
 const Cart = require("../models/Cart");
 const router = express.Router();
+  
 
-
-// Create a new order
 router.post("/create", authMiddleware, async (req, res) => {
   try {
-    const {
-      userId,
-      farmerId,
-      name,
-      products,
-      totalAmount,
-      paymentMethod,
-      deliveryAddress,
-      phoneNumber,
-      email,
-    } = req.body;
+   
+    // Assuming req.body is an array of orders
+    const ordersData = req.body;
 
-    // Validate input
-    if (
-      !userId ||
-      !farmerId ||
-      !name ||
-      !products ||
-      !totalAmount ||
-      !paymentMethod ||
-      !deliveryAddress ||
-      !phoneNumber ||
-      !email
-    ) {
-      return res.status(400).json({ message: "All fields are required." });
+    const orders = [];
+
+    // Loop through each order in the array
+    for (const orderData of ordersData) {
+      const {
+        userId,
+        name,
+        products, // Array of products with farmerId included in each product
+        totalAmount,
+        paymentMethod,
+        deliveryAddress,
+        phoneNumber,
+        email,
+      } = orderData;
+
+      // Validate input
+      if (
+        !userId ||
+        !name ||
+        !products ||
+        products.length === 0 ||
+        !totalAmount ||
+        !paymentMethod ||
+        !deliveryAddress ||
+        !phoneNumber ||
+        !email
+      ) {
+        return res.status(400).json({ message: "All fields are required." });
+      }
+
+      // Group products by farmerId
+      const productsByFarmer = products.reduce((group, product) => {
+        const farmerId = product.farmerId;
+        if (!group[farmerId]) {
+          group[farmerId] = [];
+        }
+        group[farmerId].push(product);
+        return group;
+      }, {});
+
+      // Create separate orders for each farmer
+      for (const [farmerId, farmerProducts] of Object.entries(productsByFarmer)) {
+        const orderTotal = farmerProducts.reduce(
+          (sum, product) => sum + product.total,
+          0
+        ); // Calculate total amount for this farmer's products
+
+        const order = new Order({
+          userId,
+          farmerId,
+          name,
+          products: farmerProducts,
+          totalAmount: orderTotal,
+          paymentMethod,
+          deliveryAddress,
+          phoneNumber,
+          email,
+        });
+
+        // Save the order and push it to the orders array
+        const savedOrder = await order.save();
+        orders.push(savedOrder);
+      }
     }
 
-    // Create a new order
-    const order = new Order({
-      userId,
-      farmerId,
-      name,
-      products,
-      totalAmount,
-      paymentMethod,
-      deliveryAddress,
-      phoneNumber,
-      email,
-    });
+    // Clear the user's cart after creating the orders
+    await Cart.deleteMany({ userId: ordersData[0].userId });
 
-    // Save the order to the database
-    const savedOrder = await order.save();
-    res.status(201).json({ message: "Order created successfully!", order: savedOrder });
-    await Cart.deleteMany({ userId });
+    res.status(201).json({
+      message: "Orders created successfully!",
+      orders,
+    });
   } catch (error) {
-    console.error("Error creating order:", error.message);
-    res.status(500).json({ message: "Error creating order.", error: error.message });
+    console.error("Error creating orders:", error.message);
+    res.status(500).json({ message: "Error creating orders.", error: error.message });
   }
 });
+
+
 
 
 
@@ -81,7 +114,7 @@ router.get("/", authMiddleware, async (req, res) => {
 
 router.get("/farmer-orders", authMiddleware, async (req, res) => {
   try {
-    console.log("Fetching Farmer Orders...");
+    
     const farmerOrders = await Order.find({ farmerId: req.user.id });
 
 

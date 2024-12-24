@@ -1,20 +1,28 @@
+
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+
 import { useParams, useNavigate } from "react-router-dom";
 import { paymentprocess } from "../../services/api";
 import { verifyPayment } from "../../services/api";
 const OrderPage = ({ farmersId }) => {
+
+import { useNavigate } from "react-router-dom";
+
+const OrderPage = () => {
+
   const [cartItems, setCartItems] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState(""); // New state for phone number
-  const [email, setEmail] = useState(""); // New state for email
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [email, setEmail] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("COD");
   const [errorMessage, setErrorMessage] = useState("");
-  const [userId, setUserId] = useState(null); // To store the userId from the Users database
-  const [farmerId, setfarmerId] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [farmerIds, setFarmerIds] = useState([]); // Array for multiple farmerIds
   const navigate = useNavigate();
+
   // Fetch cart items and user details on mount
   useEffect(() => {
     const fetchCartItems = async () => {
@@ -40,13 +48,18 @@ const OrderPage = ({ farmersId }) => {
         });
 
         const user = userResponse.data;
+
         console.log(user);
         setUserId(user.userId); // Set userId from the Users database
         console.log(user.userId);
 
+        setUserId(user.userId);
+
+
         // Fetch additional product details including farmer information
         const updatedItems = await Promise.all(
           items.map(async (item) => {
+
             // Fetch product details using the token for authorization
             const productResponse = await axios.get(
               `/api/products/${item.product}`,
@@ -54,7 +67,14 @@ const OrderPage = ({ farmersId }) => {
                 headers: { Authorization: `Bearer ${token}` },
               }
             );
+
+            const productResponse = await axios.get(`/api/products/${item.product}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+
             const product = productResponse.data;
+            console.log(product);
+
 
             // Fetch farmer details using the farmerId from the product
             const farmerResponse = await axios.get(
@@ -63,9 +83,20 @@ const OrderPage = ({ farmersId }) => {
                 headers: { Authorization: `Bearer ${token}` },
               }
             );
+
+            // Fetch farmer details
+            const farmerResponse = await axios.get(`/api/products/farmer-username/${product.farmerId}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+
+
             const farmer = farmerResponse.data;
-            setfarmerId(product.farmerId);
-            // Update item with additional product and farmer details
+
+            // Add farmerId to the array if it's not already there
+            setFarmerIds((prevFarmerIds) =>
+              prevFarmerIds.includes(product.farmerId) ? prevFarmerIds : [...prevFarmerIds, product.farmerId]
+            );
+
             return {
               ...item,
               product: {
@@ -135,29 +166,48 @@ const OrderPage = ({ farmersId }) => {
       return;
     }
 
-    // If userId is not fetched, alert the user
     if (!userId) {
       alert("User not found. Please log in again.");
       return;
     }
+
 
     const orderData = {
       userId, // Use the userId fetched from the Users database
       farmerId,
       name,
       products: cartItems.map((item) => ({
+
+    // Group products by farmerId
+    const productsByFarmer = cartItems.reduce((group, item) => {
+      const farmerId = item.product.farmerId; // Use the farmerId from the product
+      if (!group[farmerId]) {
+        group[farmerId] = [];
+      }
+      group[farmerId].push({
+
         productId: item.product._id,
         quantity: item.quantity,
         weight: item.weight,
         price: item.price,
         total: item.total,
-      })),
-      totalAmount,
+        farmerId: farmerId,
+      });
+      return group;
+    }, {});
+
+    // Create orders for each farmer
+    const orders = Object.keys(productsByFarmer).map((farmerId) => ({
+      userId,
+      farmerId,
+      name,
+      products: productsByFarmer[farmerId],
+      totalAmount: productsByFarmer[farmerId].reduce((sum, product) => sum + product.total, 0),
       paymentMethod,
       deliveryAddress: address,
-      phoneNumber, // Add phone number
-      email, // Add email
-    };
+      phoneNumber,
+      email,
+    }));
 
     if (paymentMethod === "Online") {
       try {
@@ -171,7 +221,7 @@ const OrderPage = ({ farmersId }) => {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.post("/api/orders/create", orderData, {
+      const response = await axios.post("/api/orders/create", orders, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (paymentMethod !== "Online") {
@@ -192,6 +242,7 @@ const OrderPage = ({ farmersId }) => {
       <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
         <h2 className="text-xl font-semibold mb-4">Cart Items</h2>
         {cartItems.map((item, index) => (
+
           <div
             key={index}
             className="flex items-center justify-between border-b py-4"
@@ -203,6 +254,10 @@ const OrderPage = ({ farmersId }) => {
               className="w-20 h-20 object-cover rounded-md"
             />
             {/* Product Name */}
+
+          <div key={index} className="flex items-center justify-between border-b py-4">
+            <img src={item.product.image} alt={item.product.name} className="w-20 h-20 object-cover rounded-md" />
+
             <div className="flex-1 pl-4">
               <p className="font-semibold">{item.product.name}</p>
               <p className="text-gray-600">{item.product.description}</p>
@@ -210,7 +265,6 @@ const OrderPage = ({ farmersId }) => {
                 Sold by: {item.product.farmerName}
               </p>
             </div>
-            {/* Quantity and Price */}
             <div className="text-right">
               <p>
                 {item.quantity} x ₹{item.price}
@@ -219,8 +273,6 @@ const OrderPage = ({ farmersId }) => {
             </div>
           </div>
         ))}
-
-        {/* Total Amount */}
         <div className="flex justify-between font-bold mt-4">
           <p>Total Amount:</p>
           <p>₹{totalAmount}</p>
@@ -232,38 +284,19 @@ const OrderPage = ({ farmersId }) => {
         <h2 className="text-xl font-semibold">Enter Delivery Details</h2>
         <div className="mb-4">
           <label className="block text-gray-600">Name</label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded"
-          />
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full p-2 border border-gray-300 rounded" />
         </div>
         <div className="mb-4">
           <label className="block text-gray-600">Address</label>
-          <textarea
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded"
-          />
+          <textarea value={address} onChange={(e) => setAddress(e.target.value)} className="w-full p-2 border border-gray-300 rounded" />
         </div>
         <div className="mb-4">
           <label className="block text-gray-600">Phone Number</label>
-          <input
-            type="text"
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded"
-          />
+          <input type="text" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} className="w-full p-2 border border-gray-300 rounded" />
         </div>
         <div className="mb-4">
           <label className="block text-gray-600">Email Address</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded"
-          />
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-2 border border-gray-300 rounded" />
         </div>
       </div>
 
@@ -271,6 +304,7 @@ const OrderPage = ({ farmersId }) => {
       <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
         <h2 className="text-xl font-semibold">Select Payment Method</h2>
         <div>
+
           <input
             type="radio"
             id="cod"
@@ -294,14 +328,18 @@ const OrderPage = ({ farmersId }) => {
           <label htmlFor="online" className="ml-2">
             Online Payment
           </label>
+
+          <input type="radio" id="cod" name="paymentMethod" value="COD" checked={paymentMethod === "COD"} onChange={(e) => setPaymentMethod(e.target.value)} />
+          <label htmlFor="cod" className="ml-2">Cash on Delivery</label>
+        </div>
+        <div>
+          <input type="radio" id="online" name="paymentMethod" value="Online" onChange={(e) => setPaymentMethod(e.target.value)} />
+          <label htmlFor="online" className="ml-2">Online Payment</label>
+
         </div>
       </div>
 
-      {/* Place Order Button */}
-      <button
-        onClick={handleOrder}
-        className="bg-blue-600 text-white py-2 px-4 rounded shadow-lg hover:bg-blue-700"
-      >
+      <button onClick={handleOrder} className="bg-blue-600 text-white py-2 px-4 rounded shadow-lg hover:bg-blue-700">
         Place Order
       </button>
     </div>
