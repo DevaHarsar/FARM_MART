@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
+import { paymentprocess } from "../../services/api";
+import { verifyPayment } from "../../services/api";
 const OrderPage = ({ farmersId }) => {
   const [cartItems, setCartItems] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
@@ -38,23 +40,29 @@ const OrderPage = ({ farmersId }) => {
         });
 
         const user = userResponse.data;
-        console.log(user)
+        console.log(user);
         setUserId(user.userId); // Set userId from the Users database
-        console.log(user.userId)
+        console.log(user.userId);
 
         // Fetch additional product details including farmer information
         const updatedItems = await Promise.all(
           items.map(async (item) => {
             // Fetch product details using the token for authorization
-            const productResponse = await axios.get(`/api/products/${item.product}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
+            const productResponse = await axios.get(
+              `/api/products/${item.product}`,
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
             const product = productResponse.data;
 
             // Fetch farmer details using the farmerId from the product
-            const farmerResponse = await axios.get(`/api/products/farmer-username/${product.farmerId}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
+            const farmerResponse = await axios.get(
+              `/api/products/farmer-username/${product.farmerId}`,
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
             const farmer = farmerResponse.data;
             setfarmerId(product.farmerId);
             // Update item with additional product and farmer details
@@ -71,11 +79,15 @@ const OrderPage = ({ farmersId }) => {
         setCartItems(updatedItems);
 
         // Calculate total amount
-        const calculatedTotal = updatedItems.reduce((sum, item) => sum + item.total, 0);
+        const calculatedTotal = updatedItems.reduce(
+          (sum, item) => sum + item.total,
+          0
+        );
         setTotalAmount(calculatedTotal);
-
       } catch (error) {
-        setErrorMessage(error.response?.data?.message || "Error fetching cart items.");
+        setErrorMessage(
+          error.response?.data?.message || "Error fetching cart items."
+        );
         console.error("Error fetching cart items:", error.message);
       }
     };
@@ -84,7 +96,40 @@ const OrderPage = ({ farmersId }) => {
   }, []);
 
   // Handle placing an order
+
+  const initPayment = async (data) => {
+    const options = {
+      key: "rzp_test_atN4rCBAMPCIXB",
+      amount: data.amount,
+      currency: data.currency,
+      // name:data.
+      order_id: data.id,
+      handler: async (response) => {
+        try {
+          const { data } = await verifyPayment(response);
+          console.log(data);
+          const verifyResult = await data.json();
+          if (verifyResult.success) {
+            alert("Payment Verified Successfully");
+          } else {
+            alert("Payment Verification Failed");
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      },
+      // prefill:,
+      theme: {
+        color: "#16a34",
+      },
+    };
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+    navigate("/orders");
+  };
+
   const handleOrder = async () => {
+    console.log(paymentMethod);
     if (!name || !address || !phoneNumber || !email) {
       alert("Please provide all the required details.");
       return;
@@ -97,7 +142,7 @@ const OrderPage = ({ farmersId }) => {
     }
 
     const orderData = {
-      userId,  // Use the userId fetched from the Users database
+      userId, // Use the userId fetched from the Users database
       farmerId,
       name,
       products: cartItems.map((item) => ({
@@ -114,14 +159,25 @@ const OrderPage = ({ farmersId }) => {
       email, // Add email
     };
 
+    if (paymentMethod === "Online") {
+      try {
+        const { data } = await paymentprocess(orderData.totalAmount);
+        console.log(data);
+        await initPayment(data.data);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post("/api/orders/create", orderData, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
-      alert("Order placed successfully!");
-      navigate("/orders");
+      if (paymentMethod !== "Online") {
+        alert("Order placed successfully!");
+        navigate("/orders");
+      }
       console.log(response.data);
     } catch (error) {
       alert("Error placing order: " + error.message);
@@ -136,18 +192,29 @@ const OrderPage = ({ farmersId }) => {
       <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
         <h2 className="text-xl font-semibold mb-4">Cart Items</h2>
         {cartItems.map((item, index) => (
-          <div key={index} className="flex items-center justify-between border-b py-4">
+          <div
+            key={index}
+            className="flex items-center justify-between border-b py-4"
+          >
             {/* Product Image */}
-            <img src={item.product.image} alt={item.product.name} className="w-20 h-20 object-cover rounded-md" />
+            <img
+              src={item.product.image}
+              alt={item.product.name}
+              className="w-20 h-20 object-cover rounded-md"
+            />
             {/* Product Name */}
             <div className="flex-1 pl-4">
               <p className="font-semibold">{item.product.name}</p>
               <p className="text-gray-600">{item.product.description}</p>
-              <p className="text-gray-600">Sold by: {item.product.farmerName}</p>
+              <p className="text-gray-600">
+                Sold by: {item.product.farmerName}
+              </p>
             </div>
             {/* Quantity and Price */}
             <div className="text-right">
-              <p>{item.quantity} x ₹{item.price}</p>
+              <p>
+                {item.quantity} x ₹{item.price}
+              </p>
               <p className="font-bold">₹{item.total}</p>
             </div>
           </div>
@@ -212,7 +279,9 @@ const OrderPage = ({ farmersId }) => {
             checked={paymentMethod === "COD"}
             onChange={(e) => setPaymentMethod(e.target.value)}
           />
-          <label htmlFor="cod" className="ml-2">Cash on Delivery</label>
+          <label htmlFor="cod" className="ml-2">
+            Cash on Delivery
+          </label>
         </div>
         <div>
           <input
@@ -222,7 +291,9 @@ const OrderPage = ({ farmersId }) => {
             value="Online"
             onChange={(e) => setPaymentMethod(e.target.value)}
           />
-          <label htmlFor="online" className="ml-2">Online Payment</label>
+          <label htmlFor="online" className="ml-2">
+            Online Payment
+          </label>
         </div>
       </div>
 
