@@ -1,4 +1,179 @@
-import axios from "axios";
+// Helper to include token
+const authHeader = () => {
+  const token = localStorage.getItem("token");
+  return {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+};
+
+// Improved code for payment process
+export const paymentProcess = async (amount) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/payment/create-order`,
+      { amount },
+      authHeader()
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error processing payment:", error);
+    throw error;
+  }
+};
+
+// Improved code for verify payment
+export const verifyPayment = async (response) => {
+  try {
+    const result = await axios.post(
+      `${API_URL}/payment/verify-order`,
+      response,
+      authHeader()
+    );
+    return result.data;
+  } catch (error) {
+    console.error("Error verifying payment:", error);
+    throw error;
+  }
+};
+
+// Improved code for get product by id
+export const getProductById = async (id) => {
+  try {
+    const response = await axios.get(`${API_URL}/products/${id}`, authHeader());
+    return response.data;
+  } catch (error) {
+    console.error("Error getting product by id:", error);
+    throw error;
+  }
+};
+
+// Improved code for update farmer profile
+export const updateFarmerProfile = async (data) => {
+  try {
+    const response = await axios.put(`${API_URL}/farmers/profile`, data, authHeader());
+    return response.data;
+  } catch (error) {
+    console.error("Error updating farmer profile:", error);
+    throw error;
+  }
+};
+
+// Improved code for get farmer profile
+export const getFarmerProfile = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/farmers/profile`, authHeader());
+    return response.data;
+  } catch (error) {
+    console.error("Error getting farmer profile:", error);
+    throw error;
+  }
+};
+
+// Improved code for get related products
+export const getRelatedProducts = async (id) => {
+  try {
+    const response = await axios.get(`${API_URL}/products/related/${id}`, authHeader());
+    return response.data;
+  } catch (error) {
+    console.error("Error getting related products:", error);
+    throw error;
+  }
+};
+
+// Improved code for get reviews
+export const getReviews = async (id) => {
+  try {
+    const response = await axios.get(`${API_URL}/products/${id}/reviews`, authHeader());
+    return response.data;
+  } catch (error) {
+    console.error("Error getting reviews:", error);
+    throw error;
+  }
+};
+
+// Improved code for add review
+export const addReview = async (id, review) => {
+  try {
+    const response = await axios.post(`${API_URL}/products/${id}/reviews`, review, authHeader());
+    return response.data;
+  } catch (error) {
+    console.error("Error adding review:", error);
+    throw error;
+  }
+};
+
+// Improved code for add to cart
+export const addToCartApi = async (product) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/cart/add`,
+      {
+        productId: product._id,
+        quantity: 1,
+      },
+      authHeader()
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error adding to cart:", error);
+    throw error;
+  }
+};
+
+// Improved code for get cart items
+export const getCartItems = async () => {
+  try {
+    const response = await axios.get(`${API_URL}/cart`, authHeader());
+    return response.data;
+  } catch (error) {
+    console.error("Error getting cart items:", error);
+    throw error;
+  }
+};
+
+// Improved code for remove item from cart
+export const removeItemFromCart = async (itemId) => {
+  try {
+    const response = await axios.delete(`${API_URL}/cart/${itemId}`, authHeader());
+    return response.data;
+  } catch (error) {
+    console.error("Error removing item from cart:", error);
+    throw error;
+  }
+};
+
+// Improved code for login
+export const login = async (data) => {
+  try {
+    const response = await axios.post(`${API_URL}/auth/login`, data);
+    return response.data;
+  } catch (error) {
+    console.error("Error logging in:", error);
+    throw error;
+  }
+};
+
+// Improved code for signup
+export const signup = async (data) => {
+  try {
+    const response = await axios.post(`${API_URL}/auth/signup`, data);
+    return response.data;
+  } catch (error) {
+    console.error("Error signing up:", error);
+    throw error;
+  }
+};
+
+// Improved code for add product
+export const addProduct = async (data) => {
+  try {
+    const response = await axios.post(`${API_URL}/products/add`, data, authHeader());
+    return response.data;
+  } catch (error) {
+    console.error("Error adding product:", error);
+    throw errorrom "axios";
 const API_URL = "http://localhost:5000/api";
 
 // Helper to include token
