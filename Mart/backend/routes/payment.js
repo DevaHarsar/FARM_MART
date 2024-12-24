@@ -28,9 +28,9 @@ router.post("/create-order", async (req, res) => {
 
 router.post("/verify-order", (req, res) => {
   try {
-    const { razoray_order_id, razorpay_payment_id, razorpay_signature } =
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
       req.body;
-    const sign = razoray_order_id + "|" + razorpay_payment_id;
+    const sign = razorpay_order_id + "|" + razorpay_payment_id;
     const expectedSign = crypto
       .createHmac("sha256", process.env.KEY_SECRET)
       .update(sign.toString())

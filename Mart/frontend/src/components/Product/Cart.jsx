@@ -51,12 +51,12 @@ const Cart = () => {
             }
           })
         );
-        console.log(itemsWithDetails)
+        
 
         // Filter out any null values (missing products)
         const validItems = itemsWithDetails.filter((item) => item !== null);
         setCartItems(validItems);
-        console.log(validItems)
+        
         calculateTotal(validItems);
       } catch (err) {
         // setError(err.response?.data?.message || "Failed to fetch cart items.");
@@ -80,7 +80,7 @@ const Cart = () => {
   // Handle quantity change
   const handleQuantityChange = async (itemId, quantity) => {
     if (quantity < 1) return;
-    console.log(itemId)
+   
     try {
       await axios.put(
         `http://localhost:5000/api/cart/${itemId}`,
