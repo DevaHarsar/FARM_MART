@@ -77,7 +77,7 @@ const ViewProduct = () => {
       }
       const quantity = 1;
       const total = selectedPrice * quantity;
-      console.log("Selected Price:", selectedPrice, "Selected Weight:", selectedWeight); // Debug log
+     
 
       const response = await axios.post(
         `${API_URL}/cart/add`,
@@ -96,7 +96,7 @@ const ViewProduct = () => {
         }
       );
 
-      console.log("Product added to cart successfully:", response.data);
+     
       alert("Product added to Cart Successfully");
       navigate("/cart");
     } catch (err) {
@@ -150,8 +150,7 @@ const ViewProduct = () => {
       setSelectedPrice(product.prices?.price_250g);
       setSelectedWeight("250g");
     }
-    console.log(selectedPrice);
-    console.log(selectedWeight);
+    
   };
 
   if (loading) {
