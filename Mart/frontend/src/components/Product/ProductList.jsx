@@ -1,4 +1,11 @@
 
+// <<<<<<< main
+// =======
+// import React, { useState, useEffect } from "react";
+// import { getAllProducts, getFarmerDetails } from "../../services/api"; // Ensure `getFarmerDetails` fetches farmer details by ID.
+// import { useNavigate } from "react-router-dom";
+
+// >>>>>>> hans
 import React, { useState, useEffect } from 'react';
 import { getAllProducts, getFarmerDetails } from '../../services/api'; // Ensure `getFarmerDetails` fetches farmer details by ID.
 import { useNavigate } from 'react-router-dom';
@@ -23,7 +30,11 @@ const ProductList = () => {
       const filteredProducts = response.data.filter(
         (product) => product.visibility !== "hidden"
       );
+// <<<<<<< main
    
+// =======
+      console.log(response);
+// >>>>>>> hans
       // Fetch farmer usernames for visible products
       const usernames = {};
       for (const product of filteredProducts) {
