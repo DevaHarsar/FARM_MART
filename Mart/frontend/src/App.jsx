@@ -40,7 +40,7 @@ function App() {
     setIsLoggedIn(true);
     setIsFarmer(role === "farmer");
     setUsername(username);
-    localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem("isLoggedIn", "false");
     localStorage.setItem("isFarmer", role === "farmer");
     localStorage.setItem("username", username);
   };
